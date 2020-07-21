@@ -7,18 +7,40 @@ import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.rules.ActivityScenarioRule
+import com.github.csandiego.cartrackchallenge.dao.CredentialDao
 import com.github.csandiego.cartrackchallenge.data.Credential
+import com.github.csandiego.cartrackchallenge.hilt.DaoModule
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.UninstallModules
+import kotlinx.coroutines.runBlocking
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.endsWith
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import javax.inject.Inject
 
+@UninstallModules(DaoModule::class)
+@HiltAndroidTest
 class MainActivityUITest {
 
     private val credential = Credential(0, "username", "password")
 
+    @Inject
+    lateinit var dao: CredentialDao
+
+    @get:Rule
+    val hiltRule = HiltAndroidRule(this)
+
     @get:Rule
     val activityScenarioRule = ActivityScenarioRule(MainActivity::class.java)
+
+    @Before
+    fun setUp() = runBlocking<Unit> {
+        hiltRule.inject()
+        dao.insert(credential)
+    }
 
     @Test
     fun givenEmptyUsernameWhenEnteredThenUsernameErrorRequired() {
