@@ -22,21 +22,18 @@ class MainActivity : AppCompatActivity() {
         binding.lifecycleOwner = this
 
         viewModel.usernameError.observe(this) {
-            when (it) {
-                MainViewModel.Error.REQUIRED -> binding.usernameTextInputLayout.error =
-                    getString(R.string.error_required)
-                MainViewModel.Error.INVALID -> binding.usernameTextInputLayout.error =
-                    getString(R.string.error_invalid_username_password)
-                else -> binding.usernameTextInputLayout.error = null
+            binding.usernameTextInputLayout.error = when (it) {
+                MainViewModel.Error.REQUIRED -> getString(R.string.error_required)
+                MainViewModel.Error.INVALID -> getString(R.string.error_invalid_username_password)
+                else -> null
             }
         }
 
         viewModel.passwordError.observe(this) {
-            when (it) {
-                MainViewModel.Error.REQUIRED -> binding.passwordTextInputLayout.error =
-                    getString(R.string.error_required)
-                else -> binding.passwordTextInputLayout.error = null
-            }
+            binding.passwordTextInputLayout.error = if (it == MainViewModel.Error.REQUIRED)
+                getString(R.string.error_required)
+            else
+                null
         }
 
         val countries = resources.getStringArray(R.array.countries)

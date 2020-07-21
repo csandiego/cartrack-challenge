@@ -15,11 +15,23 @@ class MainViewModel @ViewModelInject constructor(private val repository: Credent
         NONE, REQUIRED, INVALID
     }
 
-    var username = ""
+    private var _username = ""
+    var username
+        get() = _username
+        set(value) {
+            _username = value
+            _usernameError.value = if (value.isEmpty()) Error.REQUIRED else Error.NONE
+        }
     private val _usernameError = MutableLiveData(Error.NONE)
     val usernameError: LiveData<Error> = _usernameError
 
-    var password = ""
+    private var _password = ""
+    var password
+        get() = _password
+        set(value) {
+            _password = value
+            _passwordError.value = if (value.isEmpty()) Error.REQUIRED else Error.NONE
+        }
     private val _passwordError = MutableLiveData(Error.NONE)
     val passwordError: LiveData<Error> = _passwordError
 
@@ -30,14 +42,10 @@ class MainViewModel @ViewModelInject constructor(private val repository: Credent
     }
 
     fun login() {
-        if (username.isEmpty()) {
-            _usernameError.value = Error.REQUIRED
+        _usernameError.value = if (_username.isEmpty()) Error.REQUIRED else Error.NONE
+        _passwordError.value = if (_password.isEmpty()) Error.REQUIRED else Error.NONE
+        if (_usernameError.value != Error.NONE || _passwordError.value != Error.NONE)
             return
-        }
-        if (password.isEmpty()) {
-            _passwordError.value = Error.REQUIRED
-            return
-        }
         viewModelScope.launch {
             if (repository.validate(username, password)) {
                 _loginSuccess.value = true

@@ -47,20 +47,42 @@ class MainViewModelUnitTest {
     }
 
     @Test
-    fun givenEmptyUsernameWhenLoginThenUsernameErrorRequired() {
+    fun givenEmptyUsernameWhenEnteredThenUsernameErrorRequired() {
         with(viewModel) {
             username = ""
-            login()
             assertEquals(MainViewModel.Error.REQUIRED, usernameError.value)
         }
     }
 
     @Test
-    fun givenEmptyPasswordWhenLoginThenPasswordErrorRequired() {
+    fun givenNonEmptyUsernameWhenEnteredThenUsernameErrorNone() {
         with(viewModel) {
             username = credential.username
+            assertEquals(MainViewModel.Error.NONE, usernameError.value)
+        }
+    }
+
+    @Test
+    fun givenEmptyPasswordWhenEnteredThenPasswordErrorRequired() {
+        with(viewModel) {
             password = ""
+            assertEquals(MainViewModel.Error.REQUIRED, passwordError.value)
+        }
+    }
+
+    @Test
+    fun givenNonEmptyPasswordWhenEnteredThenPasswordErrorNone() {
+        with(viewModel) {
+            password = credential.password
+            assertEquals(MainViewModel.Error.NONE, passwordError.value)
+        }
+    }
+
+    @Test
+    fun givenEmptyCredentialWhenLoginThenUsernameErrorRequiredAndPasswordErrorRequired() {
+        with(viewModel) {
             login()
+            assertEquals(MainViewModel.Error.REQUIRED, usernameError.value)
             assertEquals(MainViewModel.Error.REQUIRED, passwordError.value)
         }
     }
