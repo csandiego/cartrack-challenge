@@ -36,6 +36,12 @@ class MainActivity : AppCompatActivity() {
                 null
         }
 
+        viewModel.loginSuccess.observe(this) {
+            if (it) {
+                viewModel.handleLoginSuccess()
+            }
+        }
+
         val countries = resources.getStringArray(R.array.countries)
         val adapter = ArrayAdapter(this, R.layout.list_item, countries)
         (binding.countryTextInputLayout.editText as AutoCompleteTextView).setAdapter(adapter)
