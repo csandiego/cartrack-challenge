@@ -1,5 +1,6 @@
 package com.github.csandiego.cartrackchallenge
 
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -7,7 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.github.csandiego.cartrackchallenge.repository.CredentialRepository
 import kotlinx.coroutines.launch
 
-class MainViewModel(private val repository: CredentialRepository) : ViewModel() {
+class MainViewModel @ViewModelInject constructor(private val repository: CredentialRepository) :
+    ViewModel() {
 
     enum class Error {
         NONE, REQUIRED, INVALID
