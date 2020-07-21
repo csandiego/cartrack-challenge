@@ -242,4 +242,6 @@
     </string-array>
     <string name="error_required">Required</string>
     <string name="error_invalid_username_password">Invalid username/password</string>
+    <string name="title_user_list">Users</string>
+    <string name="title_user_detail">User Detail</string>
 </resources>
