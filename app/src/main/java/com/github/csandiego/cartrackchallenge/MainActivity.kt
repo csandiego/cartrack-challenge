@@ -17,34 +17,41 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val binding = ActivityMainBinding.inflate(layoutInflater)
-        binding.viewModel = viewModel
-        binding.lifecycleOwner = this
+        val binding = ActivityMainBinding.inflate(layoutInflater).also {
+            it.viewModel = this.viewModel
+            it.lifecycleOwner = this
 
-        viewModel.usernameError.observe(this) {
-            binding.usernameTextInputLayout.error = when (it) {
-                MainViewModel.Error.REQUIRED -> getString(R.string.error_required)
-                MainViewModel.Error.INVALID -> getString(R.string.error_invalid_username_password)
-                else -> null
+            (it.countryTextInputLayout.editText as? AutoCompleteTextView)?.setAdapter(
+                ArrayAdapter(
+                    this,
+                    R.layout.list_item,
+                    resources.getStringArray(R.array.countries)
+                )
+            )
+        }
+
+        with(viewModel) {
+            usernameError.observe(this@MainActivity) {
+                binding.usernameTextInputLayout.error = when (it) {
+                    MainViewModel.Error.REQUIRED -> getString(R.string.error_required)
+                    MainViewModel.Error.INVALID -> getString(R.string.error_invalid_username_password)
+                    else -> null
+                }
+            }
+
+            passwordError.observe(this@MainActivity) {
+                binding.passwordTextInputLayout.error = when (it) {
+                    MainViewModel.Error.REQUIRED -> getString(R.string.error_required)
+                    else -> null
+                }
+            }
+
+            loginSuccess.observe(this@MainActivity) {
+                if (it) {
+                    viewModel.handleLoginSuccess()
+                }
             }
         }
-
-        viewModel.passwordError.observe(this) {
-            binding.passwordTextInputLayout.error = if (it == MainViewModel.Error.REQUIRED)
-                getString(R.string.error_required)
-            else
-                null
-        }
-
-        viewModel.loginSuccess.observe(this) {
-            if (it) {
-                viewModel.handleLoginSuccess()
-            }
-        }
-
-        val countries = resources.getStringArray(R.array.countries)
-        val adapter = ArrayAdapter(this, R.layout.list_item, countries)
-        (binding.countryTextInputLayout.editText as AutoCompleteTextView).setAdapter(adapter)
 
         setContentView(binding.root)
     }
