@@ -14,7 +14,13 @@
         <activity
             android:name=".UserListActivity"
             android:label="@string/title_user_list"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".UserDetailActivity"
             android:label="@string/title_user_detail"
@@ -25,11 +31,6 @@
                 android:value="com.github.csandiego.cartrackchallenge.UserListActivity" />
         </activity>
         <activity android:name=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
 
         <provider
