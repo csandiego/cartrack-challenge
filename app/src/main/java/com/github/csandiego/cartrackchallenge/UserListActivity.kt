@@ -6,32 +6,37 @@ import androidx.core.widget.NestedScrollView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import androidx.appcompat.widget.Toolbar
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import androidx.activity.viewModels
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentFactory
+import androidx.lifecycle.observe
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import com.github.csandiego.cartrackchallenge.data.User
+import com.github.csandiego.cartrackchallenge.databinding.UserListContentBinding
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+import javax.inject.Provider
 
-import com.github.csandiego.cartrackchallenge.dummy.DummyContent
-
-/**
- * An activity representing a list of Pings. This activity
- * has different presentations for handset and tablet-size devices. On
- * handsets, the activity presents a list of items, which when touched,
- * lead to a [UserDetailActivity] representing
- * item details. On tablets, the activity presents the list of items and
- * item details side-by-side using two vertical panes.
- */
+@AndroidEntryPoint
 class UserListActivity : AppCompatActivity() {
 
-    /**
-     * Whether or not the activity is in two-pane mode, i.e. running on a tablet
-     * device.
-     */
+    private val viewModel by viewModels<UserListViewModel>()
+
+    @Inject
+    lateinit var provider: Provider<UserDetailFragment>
+
     private var twoPane: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        supportFragmentManager.fragmentFactory = object : FragmentFactory() {
+
+            override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
+                return provider.get()
+            }
+        }
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user_list)
 
@@ -39,79 +44,65 @@ class UserListActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         toolbar.title = title
 
-        findViewById<FloatingActionButton>(R.id.fab).setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
-        }
+        twoPane = findViewById<NestedScrollView>(R.id.user_detail_container) != null
 
-        if (findViewById<NestedScrollView>(R.id.user_detail_container) != null) {
-            // The detail container view will be present only in the
-            // large-screen layouts (res/values-w900dp).
-            // If this view is present, then the
-            // activity should be in two-pane mode.
-            twoPane = true
-        }
+        val adapter = Adapter(this::present)
+        findViewById<RecyclerView>(R.id.user_list).adapter = adapter
 
-        setupRecyclerView(findViewById(R.id.user_list))
+        viewModel.users.observe(this) {
+            adapter.submitList(it)
+        }
     }
 
-    private fun setupRecyclerView(recyclerView: RecyclerView) {
-        recyclerView.adapter = SimpleItemRecyclerViewAdapter(this, DummyContent.ITEMS, twoPane)
+    private fun present(index: Int) {
+        if (twoPane) {
+            val fragment = provider.get().apply {
+                arguments = Bundle().apply {
+                    putInt(UserDetailFragment.ARG_ITEM_ID, index)
+                }
+            }
+            supportFragmentManager
+                .beginTransaction()
+                .replace(R.id.user_detail_container, fragment)
+                .commit()
+        } else {
+            val intent = Intent(this, UserDetailActivity::class.java).apply {
+                putExtra(UserDetailFragment.ARG_ITEM_ID, index)
+            }
+            startActivity(intent)
+        }
     }
 
-    class SimpleItemRecyclerViewAdapter(
-        private val parentActivity: UserListActivity,
-        private val values: List<DummyContent.DummyItem>,
-        private val twoPane: Boolean
-    ) :
-        RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder>() {
+    class Adapter(private val callback: (Int) -> Unit) :
+        ListAdapter<User, Adapter.ViewHolder>(ItemCallback()) {
 
-        private val onClickListener: View.OnClickListener
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val binding =
+                UserListContentBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            return ViewHolder(binding)
+        }
 
-        init {
-            onClickListener = View.OnClickListener { v ->
-                val item = v.tag as DummyContent.DummyItem
-                if (twoPane) {
-                    val fragment = UserDetailFragment().apply {
-                        arguments = Bundle().apply {
-                            putString(UserDetailFragment.ARG_ITEM_ID, item.id)
-                        }
-                    }
-                    parentActivity.supportFragmentManager
-                        .beginTransaction()
-                        .replace(R.id.user_detail_container, fragment)
-                        .commit()
-                } else {
-                    val intent = Intent(v.context, UserDetailActivity::class.java).apply {
-                        putExtra(UserDetailFragment.ARG_ITEM_ID, item.id)
-                    }
-                    v.context.startActivity(intent)
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            with(holder.binding) {
+                user = getItem(position)
+                root.setOnClickListener {
+                    callback(position)
                 }
             }
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.user_list_content, parent, false)
-            return ViewHolder(view)
-        }
+        class ViewHolder(val binding: UserListContentBinding) :
+            RecyclerView.ViewHolder(binding.root)
 
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val item = values[position]
-            holder.idView.text = item.id
-            holder.contentView.text = item.content
+        class ItemCallback : DiffUtil.ItemCallback<User>() {
 
-            with(holder.itemView) {
-                tag = item
-                setOnClickListener(onClickListener)
+            override fun areItemsTheSame(oldItem: User, newItem: User): Boolean {
+                return oldItem == newItem
             }
-        }
 
-        override fun getItemCount() = values.size
-
-        inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-            val idView: TextView = view.findViewById(R.id.id_text)
-            val contentView: TextView = view.findViewById(R.id.content)
+            override fun areContentsTheSame(oldItem: User, newItem: User): Boolean {
+                return oldItem.id == newItem.id
+            }
         }
     }
 }

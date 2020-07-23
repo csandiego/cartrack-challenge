@@ -2,37 +2,35 @@ package com.github.csandiego.cartrackchallenge
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
-import com.google.android.material.appbar.CollapsingToolbarLayout
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import com.github.csandiego.cartrackchallenge.dummy.DummyContent
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.github.csandiego.cartrackchallenge.databinding.UserDetailBinding
+import javax.inject.Inject
+import javax.inject.Provider
 
-/**
- * A fragment representing a single User detail screen.
- * This fragment is either contained in a [UserListActivity]
- * in two-pane mode (on tablets) or a [UserDetailActivity]
- * on handsets.
- */
-class UserDetailFragment : Fragment() {
+class UserDetailFragment @Inject constructor(provider: Provider<UserDetailViewModel>) : Fragment() {
 
-    /**
-     * The dummy content this fragment is presenting.
-     */
-    private var item: DummyContent.DummyItem? = null
+    private val viewModel by viewModels<UserDetailViewModel> {
+        object : ViewModelProvider.Factory {
+
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+                return provider.get() as T
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        arguments?.let {
-            if (it.containsKey(ARG_ITEM_ID)) {
-                // Load the dummy content specified by the fragment
-                // arguments. In a real-world scenario, use a Loader
-                // to load content from a content provider.
-                item = DummyContent.ITEM_MAP[it.getString(ARG_ITEM_ID)]
-                activity?.findViewById<CollapsingToolbarLayout>(R.id.toolbar_layout)?.title =
-                    item?.content
+        if (savedInstanceState == null) {
+            arguments?.getInt(ARG_ITEM_ID)?.let {
+                if (it > -1) {
+                    viewModel.loadUser(it)
+                }
             }
         }
     }
@@ -40,15 +38,9 @@ class UserDetailFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val rootView = inflater.inflate(R.layout.user_detail, container, false)
-
-        // Show the dummy content as text in a TextView.
-        item?.let {
-            rootView.findViewById<TextView>(R.id.user_detail).text = it.details
-        }
-
-        return rootView
+    ): View? = UserDetailBinding.inflate(inflater, container, false).run {
+        viewModel = this@UserDetailFragment.viewModel
+        root
     }
 
     companion object {

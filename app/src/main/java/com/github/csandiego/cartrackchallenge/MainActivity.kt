@@ -1,5 +1,6 @@
 package com.github.csandiego.cartrackchallenge
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ArrayAdapter
@@ -49,6 +50,8 @@ class MainActivity : AppCompatActivity() {
             loginSuccess.observe(this@MainActivity) {
                 if (it) {
                     viewModel.handleLoginSuccess()
+                    startActivity(Intent(this@MainActivity, UserListActivity::class.java))
+                    finish()
                 }
             }
         }
