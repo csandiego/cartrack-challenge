@@ -6,8 +6,8 @@
     android:name="com.github.csandiego.cartrackchallenge.UserListFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginLeft="16dp"
-    android:layout_marginRight="16dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
     app:layoutManager="LinearLayoutManager"
     tools:context=".UserListActivity"
     tools:listitem="@layout/user_list_content" />

@@ -24,7 +24,7 @@ class UserDetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         // TODO: Call finish() if in two-pane mode
         setContentView(R.layout.activity_user_detail)
-        setSupportActionBar(findViewById(R.id.detail_toolbar))
+        setSupportActionBar(findViewById(R.id.toolbar))
 
 
         // Show the Up button in the action bar.

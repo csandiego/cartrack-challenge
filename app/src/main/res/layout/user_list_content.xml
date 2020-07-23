@@ -1,16 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:tools="http://schemas.android.com/tools"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
     <data>
+
         <variable
             name="user"
             type="com.github.csandiego.cartrackchallenge.data.User" />
     </data>
 
-    <TextView
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:text="@{user.name}"
-        tools:text="The quick brown fox jumped over the lazy dog" />
+        app:cardElevation="0dp"
+        app:contentPaddingBottom="12dp"
+        app:contentPaddingLeft="16dp"
+        app:contentPaddingRight="12dp"
+        app:contentPaddingTop="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:text="@{user.name}"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+            app:lineHeight="24dp"
+            tools:text="The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog." />
+    </com.google.android.material.card.MaterialCardView>
 </layout>

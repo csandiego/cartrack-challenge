@@ -4,8 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginLeft="16dp"
-    android:layout_marginRight="16dp"
     android:baselineAligned="false"
     android:divider="?android:attr/dividerHorizontal"
     android:orientation="horizontal"
@@ -16,14 +14,13 @@
     This layout is a two-pane layout for the Users master/detail flow.
     -->
 
-    <androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/user_list"
         android:name="com.github.csandiego.cartrackchallenge.UserListFragment"
         android:layout_width="@dimen/item_width"
         android:layout_height="match_parent"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
         app:layoutManager="LinearLayoutManager"
         tools:context="com.github.csandiego.cartrackchallenge.UserListActivity"
         tools:listitem="@layout/user_list_content" />
