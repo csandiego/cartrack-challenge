@@ -22,10 +22,11 @@
             tools:title="User" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <FrameLayout
-        android:id="@+id/user_detail_container"
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragment"
+        android:name="com.github.csandiego.cartrackchallenge.UserDetailFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
-
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:layout="@layout/user_detail" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

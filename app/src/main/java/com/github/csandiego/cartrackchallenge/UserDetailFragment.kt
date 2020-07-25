@@ -7,9 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.observe
 import com.github.csandiego.cartrackchallenge.databinding.UserDetailBinding
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
@@ -18,103 +17,49 @@ import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapView
+import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconAllowOverlap
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconOffset
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
-import javax.inject.Inject
-import javax.inject.Provider
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
+class UserDetailFragment : Fragment() {
 
-class UserDetailFragment @Inject constructor(provider: Provider<UserDetailViewModel>) : Fragment() {
-
-    private val viewModel by viewModels<UserDetailViewModel> {
-        object : ViewModelProvider.Factory {
-
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                return provider.get() as T
-            }
-        }
-    }
+    private val viewModel by activityViewModels<UserViewModel>()
 
     private var mapView: MapView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (savedInstanceState == null) {
-            arguments?.getInt(ARG_ITEM_ID)?.let {
-                if (it > -1) {
-                    viewModel.loadUser(it)
-                }
-            }
-        }
         Mapbox.getInstance(requireContext(), getString(R.string.mapbox_access_token))
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? = UserDetailBinding.inflate(inflater, container, false).run {
-        viewModel = this@UserDetailFragment.viewModel
-        this@UserDetailFragment.mapView = mapView
-        root
-    }
-
-    companion object {
-        /**
-         * The fragment argument representing the item ID that this fragment
-         * represents.
-         */
-        const val ARG_ITEM_ID = "item_id"
+    ): View? {
+        val binding = UserDetailBinding.inflate(inflater, container, false)
+        binding.viewModel = viewModel
+        mapView = binding.mapView
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         mapView?.onCreate(savedInstanceState)
         mapView?.getMapAsync { mapboxMap ->
-
-            val builder = Style.Builder().fromUri(Style.MAPBOX_STREETS)
-
-            viewModel.user?.address?.geo?.let {
-                builder
-                    .withImage(
-                        "ICON_ID",
-                        BitmapFactory.decodeResource(
-                            resources,
-                            R.drawable.mapbox_marker_icon_default
-                        )
-                    )
-                    .withSource(
-                        GeoJsonSource(
-                            "SOURCE_ID",
-                            FeatureCollection.fromFeatures(
-                                listOf(
-                                    Feature.fromGeometry(
-                                        Point.fromLngLat(it.lng!!.toDouble(), it.lat!!.toDouble())
-                                    )
-                                )
-                            )
-                        )
-                    )
-                    .withLayer(
-                        SymbolLayer("LAYER_ID", "SOURCE_ID")
-                            .withProperties(
-                                PropertyFactory.iconImage("ICON_ID"),
-                                iconAllowOverlap(true),
-                                iconOffset(arrayOf(0f, -9f))
-                            )
-                    )
-                val ll = LatLng(it.lat!!.toDouble(), it.lng!!.toDouble())
-                mapboxMap.cameraPosition = CameraPosition.Builder()
-                    .target(ll)
-                    .zoom(2.5)
-                    .build()
+            viewModel.user.observe(viewLifecycleOwner) { user ->
+                activity?.findViewById<Toolbar>(R.id.toolbar)?.title = user.name
+                user.address?.geo?.let {
+                    val lat = it.lat?.toDouble() ?: 0.0
+                    val lng = it.lng?.toDouble() ?: 0.0
+                    showInMap(mapboxMap, lat, lng)
+                }
             }
-            mapboxMap.setStyle(builder)
         }
     }
 
@@ -126,7 +71,6 @@ class UserDetailFragment @Inject constructor(provider: Provider<UserDetailViewMo
     override fun onResume() {
         super.onResume()
         mapView?.onResume()
-        activity?.findViewById<Toolbar>(R.id.toolbar)?.title = viewModel.user?.name
     }
 
     override fun onPause() {
@@ -152,5 +96,45 @@ class UserDetailFragment @Inject constructor(provider: Provider<UserDetailViewMo
     override fun onDestroyView() {
         super.onDestroyView()
         mapView?.onDestroy()
+    }
+
+    private fun showInMap(mbm: MapboxMap, lat: Double, lng: Double) {
+        val builder = Style.Builder().fromUri(Style.MAPBOX_STREETS)
+            .withImage(
+                "ICON_ID",
+                BitmapFactory.decodeResource(
+                    resources,
+                    R.drawable.mapbox_marker_icon_default
+                )
+            )
+            .withSource(
+                GeoJsonSource(
+                    "SOURCE_ID",
+                    FeatureCollection.fromFeatures(
+                        listOf(
+                            Feature.fromGeometry(
+                                Point.fromLngLat(lng, lat)
+                            )
+                        )
+                    )
+                )
+            )
+            .withLayer(
+                SymbolLayer("LAYER_ID", "SOURCE_ID")
+                    .withProperties(
+                        PropertyFactory.iconImage("ICON_ID"),
+                        iconAllowOverlap(true),
+                        iconOffset(arrayOf(0f, -9f))
+                    )
+            )
+        val position = CameraPosition.Builder()
+            .target(LatLng(lat, lng))
+            .zoom(2.5)
+            .build()
+
+        with(mbm) {
+            cameraPosition = position
+            setStyle(builder)
+        }
     }
 }

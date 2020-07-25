@@ -5,7 +5,7 @@
     <data>
         <variable
             name="viewModel"
-            type="com.github.csandiego.cartrackchallenge.UserDetailViewModel" />
+            type="com.github.csandiego.cartrackchallenge.UserViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

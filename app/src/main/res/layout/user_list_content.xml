@@ -6,8 +6,16 @@
     <data>
 
         <variable
+            name="index"
+            type="int" />
+
+        <variable
             name="user"
             type="com.github.csandiego.cartrackchallenge.data.User" />
+
+        <variable
+            name="viewModel"
+            type="com.github.csandiego.cartrackchallenge.UserViewModel" />
     </data>
 
     <com.google.android.material.card.MaterialCardView
@@ -17,7 +25,8 @@
         app:contentPaddingBottom="12dp"
         app:contentPaddingLeft="16dp"
         app:contentPaddingRight="12dp"
-        app:contentPaddingTop="16dp">
+        app:contentPaddingTop="16dp"
+        android:onClick="@{() -> viewModel.select(index)}">
 
         <TextView
             android:layout_width="match_parent"
