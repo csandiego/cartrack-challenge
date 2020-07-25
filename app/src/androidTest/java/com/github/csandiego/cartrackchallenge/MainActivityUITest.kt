@@ -5,30 +5,29 @@ import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.replaceText
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.intent.Intents
+import androidx.test.espresso.intent.Intents.intended
+import androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.rules.ActivityScenarioRule
-import com.github.csandiego.cartrackchallenge.dao.CredentialDao
 import com.github.csandiego.cartrackchallenge.data.Credential
 import com.github.csandiego.cartrackchallenge.hilt.DaoModule
+import com.github.csandiego.cartrackchallenge.hilt.RepositoryModule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
-import kotlinx.coroutines.runBlocking
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.endsWith
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import javax.inject.Inject
 
-@UninstallModules(DaoModule::class)
+@UninstallModules(value = [DaoModule::class, RepositoryModule::class])
 @HiltAndroidTest
 class MainActivityUITest {
 
     private val credential = Credential(0, "username", "password")
-
-    @Inject
-    lateinit var dao: CredentialDao
 
     @get:Rule
     val hiltRule = HiltAndroidRule(this)
@@ -37,9 +36,14 @@ class MainActivityUITest {
     val activityScenarioRule = ActivityScenarioRule(MainActivity::class.java)
 
     @Before
-    fun setUp() = runBlocking<Unit> {
+    fun setUp() {
         hiltRule.inject()
-        dao.insert(credential)
+        Intents.init()
+    }
+
+    @After
+    fun tearDown() {
+        Intents.release()
     }
 
     @Test
@@ -133,5 +137,19 @@ class MainActivityUITest {
             withText(R.string.error_invalid_username_password),
             withEffectiveVisibility(Visibility.VISIBLE)
         )))
+    }
+
+    @Test
+    fun givenValidCredentialWhenLoginThenStartActivity() {
+        onView(allOf(
+            withClassName(endsWith("TextInputEditText")),
+            isDescendantOfA(withId(R.id.usernameTextInputLayout))
+        )).perform(replaceText(credential.username))
+        onView(allOf(
+            withClassName(endsWith("TextInputEditText")),
+            isDescendantOfA(withId(R.id.passwordTextInputLayout))
+        )).perform(replaceText(credential.password))
+        onView(withId(R.id.loginButton)).perform(click())
+        intended(hasComponent(UserListActivity::class.qualifiedName))
     }
 }
