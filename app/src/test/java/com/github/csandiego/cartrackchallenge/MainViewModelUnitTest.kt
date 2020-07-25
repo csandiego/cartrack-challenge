@@ -20,6 +20,9 @@ class MainViewModelUnitTest {
 
     private val credential = Credential(0, "username", "password")
     private val repository = object : CredentialRepository {
+
+        override suspend fun insert(credential: Credential): Long = 0L
+
         override suspend fun validate(username: String, password: String): Boolean =
             username == credential.username && password == credential.password
     }
