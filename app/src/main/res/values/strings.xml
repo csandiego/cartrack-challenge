@@ -245,4 +245,6 @@
     <string name="title_user_list">Users</string>
     <string name="title_user_detail">User Detail</string>
     <string name="users_title">Users</string>
+    <string name="username_help">Enter \"username\"</string>
+    <string name="password_help">Enter \"password\"</string>
 </resources>

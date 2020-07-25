@@ -24,6 +24,7 @@
             android:layout_marginEnd="24dp"
             android:layout_marginRight="24dp"
             android:layout_marginBottom="24dp"
+            app:helperText="@string/username_help"
             app:layout_constraintBottom_toTopOf="@+id/passwordTextInputLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
@@ -48,6 +49,7 @@
             android:layout_marginRight="24dp"
             android:layout_marginBottom="24dp"
             app:endIconMode="password_toggle"
+            app:helperText="@string/password_help"
             app:layout_constraintBottom_toTopOf="@+id/countryTextInputLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
